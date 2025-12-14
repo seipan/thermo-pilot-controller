@@ -1,0 +1,9 @@
+apiVersion: thermo-pilot.yadon3141.com/v1
+kind: ThermoPilot
+metadata:
+  labels:
+    app.kubernetes.io/name: thermo-pilot-controller
+    app.kubernetes.io/managed-by: kustomize
+  name: thermopilot-sample
+spec:
+  # TODO(user): Add fields here

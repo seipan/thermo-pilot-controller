@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- thermo-pilot_v1_thermopilot.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
