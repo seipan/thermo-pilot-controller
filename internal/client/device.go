@@ -50,17 +50,21 @@ func (c *Client) listDevice(ctx context.Context) (*ListDeviceResponse, error) {
 	return &data, nil
 }
 
-func (c Client) GetAirConditioner(ctx context.Context) (*infraredRemote, error) {
+func (c Client) MultiGetAirConditioners(ctx context.Context) ([]*infraredRemote, error) {
+	var res []*infraredRemote
 	devices, err := c.listDevice(ctx)
 	if err != nil {
 		return nil, err
 	}
 	for _, device := range devices.Body.InfraredRemoteList {
 		if device.RemoteType == AirConditioner {
-			return &device, nil
+			res = append(res, &device)
 		}
 	}
-	return nil, fmt.Errorf("air conditioner not found")
+	if len(res) == 0 {
+		return nil, fmt.Errorf("air conditioner not found")
+	}
+	return res, nil
 }
 
 func (c Client) GetMeterPro(ctx context.Context) (*device, error) {

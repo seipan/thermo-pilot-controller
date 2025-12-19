@@ -30,9 +30,44 @@ type ThermoPilotSpec struct {
 	// The following markers will use OpenAPI v3 schema to validate the value
 	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
 
-	// foo is an example field of ThermoPilot. Edit thermopilot_types.go to remove/update
+	// SwitchBot API credentials stored in a Secret
+	// +required
+	SecretRef SecretReference `json:"secretRef"`
+
+	// Device IDs for controlling temperature
 	// +optional
-	Foo *string `json:"foo,omitempty"`
+	AirConditionerID string `json:"airConditionerId,omitempty"`
+	// +required
+	TemperatureSensorID string `json:"temperatureSensorId"`
+
+	// Temperature control settings
+	// +kubebuilder:validation:Pattern=^([1-3][0-9]|[1-9])(\.[0-9])?$
+	// +required
+	TargetTemperature string `json:"targetTemperature"`
+	// +kubebuilder:validation:Pattern=^[0-5](\.[0-9])?$
+	// +kubebuilder:default="1.0"
+	// +optional
+	Threshold string `json:"threshold,omitempty"`
+
+	// Air conditioner mode: cool or heat
+	// +kubebuilder:validation:Enum=cool;heat
+	// +required
+	Mode string `json:"mode"`
+}
+
+// SecretReference holds a reference to a Secret containing SwitchBot API credentials
+type SecretReference struct {
+	// Name of the Secret in the same namespace
+	// +required
+	Name string `json:"name"`
+	// Key containing the SwitchBot API token
+	// +kubebuilder:default=token
+	// +optional
+	TokenKey string `json:"tokenKey,omitempty"`
+	// Key containing the SwitchBot API secret
+	// +kubebuilder:default=secret
+	// +optional
+	SecretKey string `json:"secretKey,omitempty"`
 }
 
 // ThermoPilotStatus defines the observed state of ThermoPilot.
@@ -56,6 +91,8 @@ type ThermoPilotStatus struct {
 	// +listMapKey=type
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	// +optional
+	CurrentTemperature string `json:"currentTemperature,omitempty"`
 }
 
 // +kubebuilder:object:root=true

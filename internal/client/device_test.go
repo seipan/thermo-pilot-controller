@@ -116,7 +116,7 @@ func TestClient_GetAirConditioner(t *testing.T) {
 			defer func() { switchBotAPI = oldAPI }()
 
 			ctx := context.Background()
-			got, err := client.GetAirConditioner(ctx)
+			got, err := client.MultiGetAirConditioners(ctx)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -126,9 +126,9 @@ func TestClient_GetAirConditioner(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, got)
-				assert.Equal(t, tt.wantDeviceID, got.DeviceID)
-				assert.Equal(t, tt.wantDeviceName, got.DeviceName)
-				assert.Equal(t, tt.wantRemoteType, got.RemoteType)
+				assert.Equal(t, tt.wantDeviceID, got[0].DeviceID)
+				assert.Equal(t, tt.wantDeviceName, got[0].DeviceName)
+				assert.Equal(t, tt.wantRemoteType, got[0].RemoteType)
 			}
 		})
 	}
@@ -233,7 +233,7 @@ func TestClient_GetMeterPro(t *testing.T) {
 
 			client := NewClient("test-token", "test-secret")
 			client.HttpClient = server.Client()
-			
+
 			oldAPI := switchBotAPI
 			switchBotAPI = server.URL + "/v1.1"
 			defer func() { switchBotAPI = oldAPI }()
@@ -318,7 +318,7 @@ func TestClient_listDevice(t *testing.T) {
 
 			client := NewClient("test-token", "test-secret")
 			client.HttpClient = server.Client()
-			
+
 			oldAPI := switchBotAPI
 			switchBotAPI = server.URL + "/v1.1"
 			defer func() { switchBotAPI = oldAPI }()
