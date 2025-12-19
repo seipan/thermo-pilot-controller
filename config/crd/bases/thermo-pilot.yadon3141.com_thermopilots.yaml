@@ -69,7 +69,10 @@ spec:
                 description: Temperature control settings
                 pattern: ^([1-3][0-9]|[1-9])(\.[0-9])?$
                 type: string
-              temperatureSensorId:
+              temperatureSensorType:
+                description: Type of temperature sensor to use (e.g., MeterPro)
+                enum:
+                - MeterPro
                 type: string
               threshold:
                 default: "1.0"
@@ -79,7 +82,7 @@ spec:
             - mode
             - secretRef
             - targetTemperature
-            - temperatureSensorId
+            - temperatureSensorType
             type: object
           status:
             description: status defines the observed state of ThermoPilot

@@ -11,7 +11,7 @@ spec:
     tokenKey: token
     secretKey: secret
   # airConditionerId: "02-202509160308-19770636"  # Optional - if not specified, controls all air conditioners
-  temperatureSensorId: "C271F2AD5589"
+  temperatureSensorType: MeterPro
   targetTemperature: "25.0"
   threshold: "1.0"
   mode: cool

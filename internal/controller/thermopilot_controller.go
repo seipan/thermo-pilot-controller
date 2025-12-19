@@ -73,9 +73,35 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	sbClient := switchbotclient.NewClient(creds.Token, creds.Secret)
 
-	currentTemp, err := sbClient.GetNowTemperature(ctx, thermoPilot.Spec.TemperatureSensorID)
+	// Get temperature sensor device
+	var sensorID string
+	switch thermoPilot.Spec.TemperatureSensorType {
+	case "MeterPro":
+		meterPro, err := sbClient.GetMeterPro(ctx)
+		if err != nil {
+			log.Error(err, "failed to get MeterPro device")
+			r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "TemperatureSensorNotFound", err.Error())
+			if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
+				log.Error(statusErr, "failed to update status")
+			}
+			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
+		}
+		sensorID = meterPro.DeviceID
+		log.Info("found temperature sensor", "type", thermoPilot.Spec.TemperatureSensorType, "deviceId", sensorID, "name", meterPro.DeviceName)
+	default:
+		err := fmt.Errorf("unsupported temperature sensor type: %s", thermoPilot.Spec.TemperatureSensorType)
+		log.Error(err, "invalid sensor type")
+		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "ConfigError", err.Error())
+		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
+			log.Error(statusErr, "failed to update status")
+		}
+		return ctrl.Result{}, err
+	}
+
+	// Get current temperature from sensor
+	currentTemp, err := sbClient.GetNowTemperature(ctx, sensorID)
 	if err != nil {
-		log.Error(err, "failed to get current temperature", "sensorId", thermoPilot.Spec.TemperatureSensorID)
+		log.Error(err, "failed to get current temperature", "sensorId", sensorID)
 		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "TemperatureSensorError", err.Error())
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
 			log.Error(statusErr, "failed to update status")
