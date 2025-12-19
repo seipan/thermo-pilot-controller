@@ -222,7 +222,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 				log.Error(statusErr, "failed to update status")
 			}
 			if len(controlErrors) == len(airConditionerIDs) {
-				return ctrl.Result{RequeueAfter: 1 * time.Minute}, fmt.Errorf(errorMsg)
+				return ctrl.Result{RequeueAfter: 1 * time.Minute}, fmt.Errorf("%s", errorMsg)
 			}
 		}
 		log.Info("air conditioner control completed", "total", len(airConditionerIDs), "errors", len(controlErrors))

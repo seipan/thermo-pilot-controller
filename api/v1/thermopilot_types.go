@@ -37,7 +37,7 @@ type ThermoPilotSpec struct {
 	// Device IDs for controlling temperature
 	// +optional
 	AirConditionerID string `json:"airConditionerId,omitempty"`
-	
+
 	// Type of temperature sensor to use (e.g., MeterPro)
 	// +kubebuilder:validation:Enum=MeterPro
 	// +required
