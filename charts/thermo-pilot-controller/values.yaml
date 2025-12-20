@@ -1,0 +1,106 @@
+# Default values for thermo-pilot-controller.
+
+# -- Number of controller replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: ghcr.io/seipan/thermo-pilot-controller
+  # -- Container image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# -- Image pull secrets
+imagePullSecrets: []
+# -- Override name
+nameOverride: ""
+# -- Override full name
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+    - ALL
+
+# -- Resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# Controller configuration
+controller:
+  # -- Enable leader election
+  leaderElect: true
+  # -- Health probe bind address
+  healthProbeBindAddress: :8081
+  # -- Metrics bind address
+  metricsBindAddress: :8080
+  # -- Enable metrics
+  metricsSecure: true
+
+# -- Whether to install CRDs
+installCRDs: true
+
+# Monitoring configuration
+monitoring:
+  # -- Enable ServiceMonitor for Prometheus Operator
+  enabled: false
+  # -- ServiceMonitor labels
+  labels: {}
+  # -- ServiceMonitor scrape interval
+  interval: 30s
+
+# Example ThermoPilot configuration (not installed by default)
+# Enable this to create a sample ThermoPilot resource
+thermoPilot:
+  # -- Enable example ThermoPilot resource
+  enabled: false
+  # -- Name of the ThermoPilot resource
+  name: example-thermostat
+  # -- Secret reference for SwitchBot credentials
+  secretRef:
+    name: switchbot-credentials
+  # -- Temperature sensor type (MeterPro)
+  temperatureSensorType: MeterPro
+  # -- Target temperature
+  targetTemperature: "25.0"
+  # -- Temperature threshold
+  threshold: "1.0"
+  # -- Mode (cool or heat)
+  mode: cool
+  # -- Air conditioner device ID (optional)
+  airConditionerId: ""

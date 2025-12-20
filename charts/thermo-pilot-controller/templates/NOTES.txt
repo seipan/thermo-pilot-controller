@@ -1,0 +1,44 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+To get started with ThermoPilot Controller:
+
+1. Create a Secret with your SwitchBot credentials:
+
+   kubectl create secret generic switchbot-credentials \
+     --from-literal=token="your-switchbot-token" \
+     --from-literal=secret="your-switchbot-secret" \
+     -n {{ .Release.Namespace }}
+
+2. Create a ThermoPilot resource:
+
+   cat <<EOF | kubectl apply -f -
+   apiVersion: thermo-pilot.yadon3141.com/v1
+   kind: ThermoPilot
+   metadata:
+     name: my-thermostat
+     namespace: {{ .Release.Namespace }}
+   spec:
+     secretRef:
+       name: switchbot-credentials
+     temperatureSensorType: MeterPro
+     targetTemperature: "25.0"
+     threshold: "1.0"
+     mode: cool
+   EOF
+
+3. Check the controller status:
+
+   kubectl get pods -l "app.kubernetes.io/instance={{ .Release.Name }}" -n {{ .Release.Namespace }}
+   kubectl logs -l "app.kubernetes.io/instance={{ .Release.Name }}" -n {{ .Release.Namespace }}
+
+4. Monitor your ThermoPilot resources:
+
+   kubectl get thermopilots -n {{ .Release.Namespace }}
+   kubectl describe thermopilot my-thermostat -n {{ .Release.Namespace }}
+
+{{- if .Values.monitoring.enabled }}
+5. Prometheus metrics are available at:
+   http://{{ include "thermo-pilot-controller.fullname" . }}-metrics-service:8080/metrics
+{{- end }}

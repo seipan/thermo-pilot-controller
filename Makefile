@@ -143,8 +143,10 @@ docker-buildx: ## Build and push docker image for the manager for cross-platform
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	mkdir -p dist
+	@if [ -z "$(IMG)" ]; then echo "Error: IMG is not set"; exit 1; fi
 	cd config/manager && "$(KUSTOMIZE)" edit set image controller=${IMG}
 	"$(KUSTOMIZE)" build config/default > dist/install.yaml
+	@echo "Generated installer at dist/install.yaml with image ${IMG}"
 
 ##@ Deployment
 

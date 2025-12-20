@@ -1,0 +1,103 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-manager-role
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - thermo-pilot.yadon3141.com
+  resources:
+  - thermopilots
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - thermo-pilot.yadon3141.com
+  resources:
+  - thermopilots/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - thermo-pilot.yadon3141.com
+  resources:
+  - thermopilots/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-metrics-reader
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-proxy-role
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-manager-rolebinding
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "thermo-pilot-controller.fullname" . }}-manager-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "thermo-pilot-controller.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-proxy-rolebinding
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "thermo-pilot-controller.fullname" . }}-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "thermo-pilot-controller.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}

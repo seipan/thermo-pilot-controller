@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-metrics-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    control-plane: controller-manager
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+    targetPort: metrics
+  selector:
+    {{- include "thermo-pilot-controller.selectorLabels" . | nindent 4 }}

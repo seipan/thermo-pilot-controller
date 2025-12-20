@@ -1,0 +1,19 @@
+{{- if .Values.thermoPilot.enabled }}
+apiVersion: thermo-pilot.yadon3141.com/v1
+kind: ThermoPilot
+metadata:
+  name: {{ .Values.thermoPilot.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+spec:
+  secretRef:
+    name: {{ .Values.thermoPilot.secretRef.name }}
+  temperatureSensorType: {{ .Values.thermoPilot.temperatureSensorType }}
+  targetTemperature: {{ .Values.thermoPilot.targetTemperature | quote }}
+  threshold: {{ .Values.thermoPilot.threshold | quote }}
+  mode: {{ .Values.thermoPilot.mode }}
+  {{- if .Values.thermoPilot.airConditionerId }}
+  airConditionerId: {{ .Values.thermoPilot.airConditionerId }}
+  {{- end }}
+{{- end }}

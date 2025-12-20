@@ -1,0 +1,25 @@
+apiVersion: v2
+name: thermo-pilot-controller
+description: A Kubernetes operator for controlling air conditioners based on temperature readings from SwitchBot sensors
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - switchbot
+  - iot
+  - temperature
+  - air-conditioner
+  - operator
+home: https://github.com/seipan/thermo-pilot-controller
+sources:
+  - https://github.com/seipan/thermo-pilot-controller
+maintainers:
+  - name: seipan
+    email: yamasakipann0218@gmail.com
+icon: https://example.com/icon.png # TODO: Add actual icon URL
+annotations:
+  "artifacthub.io/changes": |
+    - Initial release
+  "artifacthub.io/operator": "true"
+  "artifacthub.io/operatorCapabilities": "Basic Install"
+  "artifacthub.io/prerelease": "false"
