@@ -33,7 +33,7 @@ func (c Client) GetNowTemperature(ctx context.Context, deviceID string) (float64
 	if err := json.Unmarshal(res, &data); err != nil {
 		return 0, err
 	}
-	if data.StatusCode != 200 {
+	if data.StatusCode != 100 {
 		return 0, fmt.Errorf("unexpected status code: %d, message: %s", data.StatusCode, data.Message)
 	}
 	return data.Body.Temperature, nil
@@ -46,17 +46,27 @@ func (c Client) SetTemperature(ctx context.Context, deviceID string, temperature
 		Parameter   string `json:"parameter"`
 		CommandType string `json:"commandType"`
 	}{
-		Command:     "setTemperature",
-		Parameter:   fmt.Sprintf("%.1f,%d,1,on", temperature, mode),
+		Command:     "setAll",
+		Parameter:   fmt.Sprintf("%.0f,%d,1,on", temperature, mode),
 		CommandType: "command",
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed marshal payload: %w", err)
 	}
-	_, err = c.post(ctx, path, bytes.NewReader(body))
+	res, err := c.post(ctx, path, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("failed post set temperature command: %w", err)
+	}
+	var data struct {
+		StatusCode int    `json:"statusCode"`
+		Message    string `json:"message"`
+	}
+	if err := json.Unmarshal(res, &data); err != nil {
+		return err
+	}
+	if data.StatusCode != 100 {
+		return fmt.Errorf("unexpected status code: %d, message: %s", data.StatusCode, data.Message)
 	}
 	return nil
 }
