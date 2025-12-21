@@ -1,8 +1,8 @@
-version: "2"
 run:
+  timeout: 5m
   allow-parallel-runners: true
+
 linters:
-  default: none
   enable:
     - copyloopvar
     - dupl
@@ -21,32 +21,25 @@ linters:
     - unconvert
     - unparam
     - unused
-  settings:
-    revive:
-      rules:
-        - name: comment-spacings
-        - name: import-shadowing
-  exclusions:
-    generated: lax
+
+linters-settings:
+  lll:
+    line-length: 120
+  revive:
     rules:
-      - linters:
-          - lll
-        path: api/*
-      - linters:
-          - dupl
-          - lll
-        path: internal/*
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
-formatters:
-  enable:
-    - gofmt
-    - goimports
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+      - name: comment-spacings
+      - name: import-shadowing
+
+issues:
+  exclude-dirs:
+    - third_party
+    - builtin
+    - examples
+  exclude-rules:
+    - path: api/
+      linters:
+        - lll
+    - path: internal/
+      linters:
+        - dupl
+        - lll
