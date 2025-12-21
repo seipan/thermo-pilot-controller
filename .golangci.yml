@@ -3,10 +3,6 @@ version: "2"
 run:
   timeout: 5m
   allow-parallel-runners: true
-  skip-dirs:
-    - third_party
-    - builtin
-    - examples
 
 output:
   show-stats: true
@@ -15,6 +11,7 @@ output:
     - linter
 
 linters:
+  default: none
   enable:
     - copyloopvar
     - dupl
@@ -34,15 +31,27 @@ linters:
     - unparam
     - unused
 
-linters.lll:
-  line-length: 120
+  settings:
+    lll:
+      line-length: 120
+    revive:
+      rules:
+        - name: comment-spacings
+        - name: import-shadowing
 
-linters.revive:
-  rules:
-    - name: comment-spacings
-    - name: import-shadowing
-
-issues:
-  exclude-files:
-    - "api/.*"
-    - "internal/.*"
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+    paths:
+      - third_party
+      - builtin
+      - examples
+    rules:
+      - path: api/
+        linters:
+          - lll
+      - path: internal/
+        linters:
+          - dupl
+          - lll
