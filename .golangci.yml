@@ -1,6 +1,14 @@
+version: "2"
+
 run:
   timeout: 5m
   allow-parallel-runners: true
+
+output:
+  show-stats: true
+  sort-order:
+    - file
+    - linter
 
 linters:
   enable:
