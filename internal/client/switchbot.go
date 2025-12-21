@@ -68,7 +68,13 @@ func (c *Client) Do(req *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("executing request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't return it as the main operation may have succeeded
+			// In production, you might want to use a proper logger here
+			_ = err
+		}
+	}()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)

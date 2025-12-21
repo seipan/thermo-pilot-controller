@@ -47,13 +47,13 @@ type ThermoPilotReconciler struct {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 	var thermoPilot thermopilotv1.ThermoPilot
 	if err := r.Get(ctx, req.NamespacedName, &thermoPilot); err != nil {
 		if errors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
-		log.Error(err, "unable to fetch ThermoPilot")
+		logger.Error(err, "unable to fetch ThermoPilot")
 		return ctrl.Result{}, err
 	}
 
@@ -63,10 +63,10 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	creds, err := GetSwitchBotCredentials(ctx, r.Client, thermoPilot.Spec, thermoPilot.Namespace)
 	if err != nil {
-		log.Error(err, "failed to get SwitchBot credentials")
+		logger.Error(err, "failed to get SwitchBot credentials")
 		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "CredentialsError", err.Error())
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-			log.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, "failed to update status")
 		}
 		return ctrl.Result{RequeueAfter: 5 * time.Minute}, err
 	}
@@ -79,21 +79,21 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	case "MeterPro":
 		meterPro, err := sbClient.GetMeterPro(ctx)
 		if err != nil {
-			log.Error(err, "failed to get MeterPro device")
+			logger.Error(err, "failed to get MeterPro device")
 			r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "TemperatureSensorNotFound", err.Error())
 			if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-				log.Error(statusErr, "failed to update status")
+				logger.Error(statusErr, "failed to update status")
 			}
 			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 		}
 		sensorID = meterPro.DeviceID
-		log.Info("found temperature sensor", "type", thermoPilot.Spec.TemperatureSensorType, "deviceId", sensorID, "name", meterPro.DeviceName)
+		logger.Info("found temperature sensor", "type", thermoPilot.Spec.TemperatureSensorType, "deviceId", sensorID, "name", meterPro.DeviceName)
 	default:
 		err := fmt.Errorf("unsupported temperature sensor type: %s", thermoPilot.Spec.TemperatureSensorType)
-		log.Error(err, "invalid sensor type")
+		logger.Error(err, "invalid sensor type")
 		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "ConfigError", err.Error())
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-			log.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, "failed to update status")
 		}
 		return ctrl.Result{}, err
 	}
@@ -101,10 +101,10 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	// Get current temperature from sensor
 	currentTemp, err := sbClient.GetNowTemperature(ctx, sensorID)
 	if err != nil {
-		log.Error(err, "failed to get current temperature", "sensorId", sensorID)
+		logger.Error(err, "failed to get current temperature", "sensorId", sensorID)
 		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "TemperatureSensorError", err.Error())
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-			log.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, "failed to update status")
 		}
 		return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 	}
@@ -113,10 +113,10 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	targetTemp, err := ParseTemperature(thermoPilot.Spec.TargetTemperature)
 	if err != nil {
-		log.Error(err, "failed to parse target temperature")
+		logger.Error(err, "failed to parse target temperature")
 		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "ConfigError", err.Error())
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-			log.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, "failed to update status")
 		}
 		return ctrl.Result{}, err
 	}
@@ -124,13 +124,13 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	if thermoPilot.Spec.Threshold != "" {
 		threshold, err = ParseTemperature(thermoPilot.Spec.Threshold)
 		if err != nil {
-			log.Error(err, "failed to parse threshold")
+			logger.Error(err, "failed to parse threshold")
 			threshold = 1.0
 		}
 	}
 
 	tempDiff := currentTemp - targetTemp
-	log.Info("temperature status",
+	logger.Info("temperature status",
 		"current", currentTemp,
 		"target", targetTemp,
 		"difference", tempDiff,
@@ -163,22 +163,23 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	default:
 		err := fmt.Errorf("unsupported mode: %s", thermoPilot.Spec.Mode)
-		log.Error(err, "invalid mode in spec")
+		logger.Error(err, "invalid mode in spec")
 		r.setCondition(&thermoPilot, "Available", metav1.ConditionFalse, "ConfigError", err.Error())
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-			log.Error(statusErr, "failed to update status")
+			logger.Error(statusErr, "failed to update status")
 		}
 		return ctrl.Result{}, err
 	}
 
 	if needsAction {
-		log.Info("controlling air conditioner", "action", action, "mode", mode)
+		logger.Info("controlling air conditioner", "action", action, "mode", mode)
 		r.setCondition(&thermoPilot, "Progressing", metav1.ConditionTrue, "ControllingAirConditioner", fmt.Sprintf("Performing action: %s", action))
 
 		adjustedTemp := targetTemp
-		if action == "adjusting up (too cold)" {
+		switch action {
+		case "adjusting up (too cold)":
 			adjustedTemp = targetTemp + 3.0 // Raise by 3 degrees if too cold
-		} else if action == "adjusting down (too warm)" {
+		case "adjusting down (too warm)":
 			adjustedTemp = targetTemp - 3.0 // Lower by 3 degrees if too warm
 		}
 
@@ -190,17 +191,17 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			// Get all air conditioners
 			airConditioners, err := sbClient.MultiGetAirConditioners(ctx)
 			if err != nil {
-				log.Error(err, "failed to get air conditioners")
+				logger.Error(err, "failed to get air conditioners")
 				r.setCondition(&thermoPilot, "Degraded", metav1.ConditionTrue, "AirConditionerListError", err.Error())
 				if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-					log.Error(statusErr, "failed to update status")
+					logger.Error(statusErr, "failed to update status")
 				}
 				return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
 			}
 			for _, ac := range airConditioners {
 				airConditionerIDs = append(airConditionerIDs, ac.DeviceID)
 			}
-			log.Info("found air conditioners", "count", len(airConditionerIDs), "ids", airConditionerIDs)
+			logger.Info("found air conditioners", "count", len(airConditionerIDs), "ids", airConditionerIDs)
 		}
 
 		// Control all air conditioners
@@ -208,10 +209,10 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		for _, deviceID := range airConditionerIDs {
 			err = sbClient.SetTemperature(ctx, deviceID, adjustedTemp, mode)
 			if err != nil {
-				log.Error(err, "failed to control air conditioner", "deviceId", deviceID)
+				logger.Error(err, "failed to control air conditioner", "deviceId", deviceID)
 				controlErrors = append(controlErrors, fmt.Sprintf("%s: %v", deviceID, err))
 			} else {
-				log.Info("successfully controlled air conditioner", "deviceId", deviceID, "action", action)
+				logger.Info("successfully controlled air conditioner", "deviceId", deviceID, "action", action)
 			}
 		}
 
@@ -219,13 +220,13 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			errorMsg := fmt.Sprintf("failed to control %d/%d air conditioners: %v", len(controlErrors), len(airConditionerIDs), controlErrors)
 			r.setCondition(&thermoPilot, "Degraded", metav1.ConditionTrue, "AirConditionerControlError", errorMsg)
 			if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
-				log.Error(statusErr, "failed to update status")
+				logger.Error(statusErr, "failed to update status")
 			}
 			if len(controlErrors) == len(airConditionerIDs) {
 				return ctrl.Result{RequeueAfter: 1 * time.Minute}, fmt.Errorf("%s", errorMsg)
 			}
 		}
-		log.Info("air conditioner control completed", "total", len(airConditionerIDs), "errors", len(controlErrors))
+		logger.Info("air conditioner control completed", "total", len(airConditionerIDs), "errors", len(controlErrors))
 	}
 
 	if needsAction {
@@ -240,7 +241,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	r.setCondition(&thermoPilot, "Degraded", metav1.ConditionFalse, "Healthy", "No errors detected")
 
 	if err := r.Status().Update(ctx, &thermoPilot); err != nil {
-		log.Error(err, "failed to update status")
+		logger.Error(err, "failed to update status")
 		return ctrl.Result{}, err
 	}
 	return ctrl.Result{RequeueAfter: 5 * time.Minute}, nil

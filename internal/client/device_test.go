@@ -104,7 +104,9 @@ func TestClient_GetAirConditioner(t *testing.T) {
 
 				w.WriteHeader(tt.statusCode)
 				if tt.statusCode == 200 {
-					json.NewEncoder(w).Encode(tt.response)
+					if err := json.NewEncoder(w).Encode(tt.response); err != nil {
+						t.Errorf("Failed to encode response: %v", err)
+					}
 				}
 			}))
 			defer server.Close()
@@ -226,7 +228,9 @@ func TestClient_GetMeterPro(t *testing.T) {
 
 				w.WriteHeader(tt.statusCode)
 				if tt.statusCode == 200 {
-					json.NewEncoder(w).Encode(tt.response)
+					if err := json.NewEncoder(w).Encode(tt.response); err != nil {
+						t.Errorf("Failed to encode response: %v", err)
+					}
 				}
 			}))
 			defer server.Close()
@@ -311,7 +315,9 @@ func TestClient_listDevice(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
 				if tt.statusCode == 200 {
-					json.NewEncoder(w).Encode(tt.response)
+					if err := json.NewEncoder(w).Encode(tt.response); err != nil {
+						t.Errorf("Failed to encode response: %v", err)
+					}
 				}
 			}))
 			defer server.Close()
