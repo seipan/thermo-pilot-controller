@@ -1,4 +1,4 @@
-# thermo-pilot-controller
+# [WIP] :construction: thermo-pilot-controller
 
 A Kubernetes operator that automatically manages room temperature using SwitchBot smart home devices.
 
