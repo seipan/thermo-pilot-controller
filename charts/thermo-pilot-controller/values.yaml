@@ -61,6 +61,15 @@ tolerations: []
 # -- Affinity rules
 affinity: {}
 
+# Pod Disruption Budget configuration
+podDisruptionBudget:
+  # -- Enable PodDisruptionBudget
+  enabled: false
+  # -- Minimum available pods during disruption
+  minAvailable: 1
+  # -- Maximum unavailable pods during disruption (mutually exclusive with minAvailable)
+  maxUnavailable: ""
+
 # Controller configuration
 controller:
   # -- Enable leader election
@@ -72,8 +81,45 @@ controller:
   # -- Enable metrics
   metricsSecure: true
 
-# -- Whether to install CRDs
-installCRDs: true
+# Probe configuration
+probes:
+  liveness:
+    # -- Enable liveness probe
+    enabled: true
+    # -- Initial delay seconds
+    initialDelaySeconds: 15
+    # -- Period seconds
+    periodSeconds: 20
+    # -- Timeout seconds
+    timeoutSeconds: 1
+    # -- Success threshold
+    successThreshold: 1
+    # -- Failure threshold
+    failureThreshold: 3
+  readiness:
+    # -- Enable readiness probe
+    enabled: true
+    # -- Initial delay seconds
+    initialDelaySeconds: 5
+    # -- Period seconds
+    periodSeconds: 10
+    # -- Timeout seconds
+    timeoutSeconds: 1
+    # -- Success threshold
+    successThreshold: 1
+    # -- Failure threshold
+    failureThreshold: 3
+
+# RBAC configuration
+rbac:
+  # -- Create RBAC resources
+  create: true
+  # -- Secret access configuration
+  secretAccess:
+    # -- Use namespace-scoped secret access (recommended for security)
+    namespaced: true
+    # -- Namespace where secrets can be accessed (defaults to release namespace)
+    namespace: ""
 
 # Monitoring configuration
 monitoring:

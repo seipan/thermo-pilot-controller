@@ -1,3 +1,4 @@
+{{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -5,14 +6,6 @@ metadata:
   labels:
     {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
 - apiGroups:
   - thermo-pilot.yadon3141.com
   resources:
@@ -39,18 +32,6 @@ rules:
   - get
   - patch
   - update
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: {{ include "thermo-pilot-controller.fullname" . }}-metrics-reader
-  labels:
-    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
-rules:
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -101,3 +82,72 @@ subjects:
 - kind: ServiceAccount
   name: {{ include "thermo-pilot-controller.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
+---
+{{- if .Values.rbac.secretAccess.namespaced }}
+# Role for namespace-scoped secret access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-secret-reader
+  namespace: {{ .Values.rbac.secretAccess.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-secret-reader
+  namespace: {{ .Values.rbac.secretAccess.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "thermo-pilot-controller.fullname" . }}-secret-reader
+subjects:
+- kind: ServiceAccount
+  name: {{ include "thermo-pilot-controller.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- else }}
+# ClusterRole for cluster-wide secret access (less secure)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-secret-reader
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "thermo-pilot-controller.fullname" . }}-secret-reader
+  labels:
+    {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "thermo-pilot-controller.fullname" . }}-secret-reader
+subjects:
+- kind: ServiceAccount
+  name: {{ include "thermo-pilot-controller.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

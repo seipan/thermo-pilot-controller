@@ -16,7 +16,7 @@ sources:
 maintainers:
   - name: seipan
     email: yamasakipann0218@gmail.com
-icon: https://example.com/icon.png # TODO: Add actual icon URL
+# icon: https://raw.githubusercontent.com/seipan/thermo-pilot-controller/main/docs/icon.png
 annotations:
   "artifacthub.io/changes": |
     - Initial release

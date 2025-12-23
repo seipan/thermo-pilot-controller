@@ -71,6 +71,28 @@ spec:
   mode: cool
 ```
 
+### Security Configuration
+
+By default, the controller uses namespace-scoped access to secrets for improved security. You can configure this behavior:
+
+```yaml
+# values.yaml
+rbac:
+  secretAccess:
+    # Use namespace-scoped access (recommended)
+    namespaced: true
+    # Specify a different namespace for secrets (optional)
+    namespace: "switchbot-secrets"
+```
+
+For cluster-wide secret access (less secure):
+
+```yaml
+rbac:
+  secretAccess:
+    namespaced: false
+```
+
 ## Values
 
 | Key | Type | Default | Description |
@@ -89,11 +111,22 @@ spec:
 | nodeSelector | object | `{}` | Node selector |
 | tolerations | list | `[]` | Tolerations |
 | affinity | object | `{}` | Affinity rules |
+| podDisruptionBudget.enabled | bool | `false` | Enable PodDisruptionBudget |
+| podDisruptionBudget.minAvailable | int | `1` | Minimum available pods during disruption |
+| podDisruptionBudget.maxUnavailable | string | `""` | Maximum unavailable pods during disruption |
 | controller.leaderElect | bool | `true` | Enable leader election |
 | controller.healthProbeBindAddress | string | `":8081"` | Health probe bind address |
 | controller.metricsBindAddress | string | `":8080"` | Metrics bind address |
-| controller.metricsSecure | bool | `true` | Enable metrics |
-| installCRDs | bool | `true` | Whether to install CRDs |
+| controller.metricsSecure | bool | `true` | Enable secure metrics endpoint |
+| probes.liveness.enabled | bool | `true` | Enable liveness probe |
+| probes.liveness.initialDelaySeconds | int | `15` | Initial delay seconds |
+| probes.liveness.periodSeconds | int | `20` | Period seconds |
+| probes.readiness.enabled | bool | `true` | Enable readiness probe |
+| probes.readiness.initialDelaySeconds | int | `5` | Initial delay seconds |
+| probes.readiness.periodSeconds | int | `10` | Period seconds |
+| rbac.create | bool | `true` | Create RBAC resources |
+| rbac.secretAccess.namespaced | bool | `true` | Use namespace-scoped secret access |
+| rbac.secretAccess.namespace | string | `""` | Namespace where secrets can be accessed |
 | monitoring.enabled | bool | `false` | Enable ServiceMonitor for Prometheus Operator |
 | monitoring.labels | object | `{}` | ServiceMonitor labels |
 | monitoring.interval | string | `"30s"` | ServiceMonitor scrape interval |

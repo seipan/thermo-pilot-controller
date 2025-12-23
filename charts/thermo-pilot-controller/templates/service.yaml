@@ -4,8 +4,8 @@ metadata:
   name: {{ include "thermo-pilot-controller.fullname" . }}-metrics-service
   namespace: {{ .Release.Namespace }}
   labels:
-    control-plane: controller-manager
     {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics
 spec:
   ports:
   - name: metrics
