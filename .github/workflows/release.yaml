@@ -106,12 +106,23 @@ jobs:
 
       - name: Update Helm repository index
         run: |
-          git checkout gh-pages || git checkout -b gh-pages
+          # Stash any local changes first
+          git stash
+          
+          # Fetch and checkout gh-pages branch
+          git fetch origin gh-pages:gh-pages || true
+          git checkout gh-pages
+          
+          # Ensure docs directory exists and copy chart
           mkdir -p docs
-          mv thermo-pilot-controller-*.tgz docs/
+          cp $(ls thermo-pilot-controller-*.tgz | head -1) docs/
+          
+          # Update repository index
           helm repo index docs --url https://seipan.github.io/thermo-pilot-controller
+          
+          # Commit and push changes
           git add docs/
-          git commit -m "Update Helm chart for version ${GITHUB_REF#refs/tags/}"
+          git commit -m "Update Helm chart for version ${GITHUB_REF#refs/tags/}" || echo "No changes to commit"
           git push origin gh-pages
 
   create-release-notes:
