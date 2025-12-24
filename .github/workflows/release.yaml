@@ -106,24 +106,32 @@ jobs:
 
       - name: Update Helm repository index
         run: |
-          # Stash any local changes first
-          git stash
+          # Save the chart package name
+          CHART_FILE=$(ls thermo-pilot-controller-*.tgz | head -1)
           
-          # Fetch and checkout gh-pages branch
-          git fetch origin gh-pages:gh-pages || true
-          git checkout gh-pages
+          # Configure git
+          git config --global user.name "$GITHUB_ACTOR"
+          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
           
-          # Ensure docs directory exists and copy chart
+          # Create a new worktree for gh-pages to avoid conflicts
+          git worktree add gh-pages-tmp gh-pages || git worktree add -b gh-pages gh-pages-tmp
+          
+          # Copy chart to gh-pages
+          cd gh-pages-tmp
           mkdir -p docs
-          cp $(ls thermo-pilot-controller-*.tgz | head -1) docs/
+          cp ../$CHART_FILE docs/
           
           # Update repository index
           helm repo index docs --url https://seipan.github.io/thermo-pilot-controller
           
           # Commit and push changes
           git add docs/
-          git commit -m "Update Helm chart for version ${GITHUB_REF#refs/tags/}" || echo "No changes to commit"
+          git commit -m "Update Helm chart for version ${GITHUB_REF#refs/tags/}"
           git push origin gh-pages
+          
+          # Cleanup
+          cd ..
+          git worktree remove gh-pages-tmp
 
   create-release-notes:
     needs: [build-and-push, release-helm-chart]
