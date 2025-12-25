@@ -1,6 +1,0 @@
-# Chart Releaser Configuration
-# https://github.com/helm/chart-releaser
-owner: seipan
-git-repo: thermo-pilot-controller
-make-release-latest: false
-release-notes-file: RELEASE.md
