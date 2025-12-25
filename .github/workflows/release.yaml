@@ -56,24 +56,22 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  release-helm-chart:
+  chart-release:
     needs: build-and-push
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
-      pages: write
-      id-token: write
+    if: ${{ github.event_name == 'release' && success() }}
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Configure Git
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -87,6 +85,20 @@ jobs:
           sed -i "s/^version:.*/version: ${VERSION}/" charts/thermo-pilot-controller/Chart.yaml
           sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" charts/thermo-pilot-controller/Chart.yaml
 
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.4.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+  upload-manifests:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Generate install manifests
         run: |
           make build-installer IMG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
@@ -97,15 +109,7 @@ jobs:
           files: |
             dist/install.yaml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
-        with:
-          charts_dir: charts
-          config: .github/cr.yaml
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
 
   create-release-notes:
     needs: [build-and-push, release-helm-chart]
