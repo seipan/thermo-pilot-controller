@@ -7,6 +7,25 @@ metadata:
     {{- include "thermo-pilot-controller.labels" . | nindent 4 }}
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
   - thermo-pilot.yadon3141.com
   resources:
   - thermopilots
