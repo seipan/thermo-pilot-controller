@@ -112,7 +112,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
 
   create-release-notes:
-    needs: [build-and-push, release-helm-chart]
+    needs: [build-and-push, chart-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write
