@@ -87,51 +87,25 @@ jobs:
           sed -i "s/^version:.*/version: ${VERSION}/" charts/thermo-pilot-controller/Chart.yaml
           sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" charts/thermo-pilot-controller/Chart.yaml
 
-      - name: Package Helm chart
-        run: |
-          helm package charts/thermo-pilot-controller
-
       - name: Generate install manifests
         run: |
           make build-installer IMG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
 
-      - name: Upload assets to release
+      - name: Upload install.yaml to release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            thermo-pilot-controller-*.tgz
             dist/install.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update Helm repository index
-        run: |
-          # Save the chart package name
-          CHART_FILE=$(ls thermo-pilot-controller-*.tgz | head -1)
-          
-          # Configure git
-          git config --global user.name "$GITHUB_ACTOR"
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          
-          # Create a new worktree for gh-pages to avoid conflicts
-          git worktree add gh-pages-tmp gh-pages || git worktree add -b gh-pages gh-pages-tmp
-          
-          # Copy chart to gh-pages
-          cd gh-pages-tmp
-          mkdir -p docs
-          cp ../$CHART_FILE docs/
-          
-          # Update repository index
-          helm repo index docs --url https://seipan.github.io/thermo-pilot-controller
-          
-          # Commit and push changes
-          git add docs/
-          git commit -m "Update Helm chart for version ${GITHUB_REF#refs/tags/}"
-          git push origin gh-pages
-          
-          # Cleanup
-          cd ..
-          git worktree remove gh-pages-tmp
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: charts
+          config: .github/cr.yaml
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   create-release-notes:
     needs: [build-and-push, release-helm-chart]
