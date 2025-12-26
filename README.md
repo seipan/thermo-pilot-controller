@@ -1,4 +1,4 @@
-# [WIP] :construction: thermo-pilot-controller
+# thermo-pilot-controller
 
 A Kubernetes operator that automatically manages room temperature using SwitchBot smart home devices.
 
@@ -25,13 +25,7 @@ The thermo-pilot-controller monitors temperature sensors and controls air condit
 
 ## Installation
 
-### Install CRDs and Controller
-
-```bash
-kubectl apply -f https://github.com/seipan/thermo-pilot-controller/releases/latest/download/install.yaml
-```
-
-### Using Helm (recommended)
+### Using Helm
 
 ```bash
 helm repo add thermo-pilot https://seipan.github.io/thermo-pilot-controller
@@ -44,6 +38,14 @@ helm install thermo-pilot thermo-pilot/thermo-pilot-controller
 
 First, create a Secret with your SwitchBot API credentials:
 
+```bash
+kubectl create secret generic switchbot-credentials \
+  --from-literal=token="your-switchbot-token" \
+  --from-literal=secret="your-switchbot-secret" \
+  -n default
+```
+
+Or using YAML:
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -133,7 +135,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
