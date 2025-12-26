@@ -70,7 +70,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
 			logger.Error(statusErr, "failed to update status")
 		}
-		return ctrl.Result{RequeueAfter: 5 * time.Minute}, err
+		return ctrl.Result{}, err
 	}
 
 	sbClient := switchbotclient.NewClient(creds.Token, creds.Secret)
@@ -86,7 +86,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
 				logger.Error(statusErr, "failed to update status")
 			}
-			return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
+			return ctrl.Result{}, err
 		}
 		sensorID = meterPro.DeviceID
 		logger.Info("found temperature sensor", "type", thermoPilot.Spec.TemperatureSensorType, "deviceId", sensorID, "name", meterPro.DeviceName)
@@ -108,7 +108,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
 			logger.Error(statusErr, "failed to update status")
 		}
-		return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
+		return ctrl.Result{}, err
 	}
 
 	thermoPilot.Status.CurrentTemperature = FormatTemperature(currentTemp)
@@ -198,7 +198,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 				if statusErr := r.Status().Update(ctx, &thermoPilot); statusErr != nil {
 					logger.Error(statusErr, "failed to update status")
 				}
-				return ctrl.Result{RequeueAfter: 1 * time.Minute}, err
+				return ctrl.Result{}, err
 			}
 			for _, ac := range airConditioners {
 				airConditionerIDs = append(airConditionerIDs, ac.DeviceID)
@@ -225,7 +225,7 @@ func (r *ThermoPilotReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 				logger.Error(statusErr, "failed to update status")
 			}
 			if len(controlErrors) == len(airConditionerIDs) {
-				return ctrl.Result{RequeueAfter: 1 * time.Minute}, fmt.Errorf("%s", errorMsg)
+				return ctrl.Result{}, fmt.Errorf("%s", errorMsg)
 			}
 		}
 		logger.Info("air conditioner control completed", "total", len(airConditionerIDs), "errors", len(controlErrors))
