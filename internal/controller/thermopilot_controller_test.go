@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -109,7 +110,8 @@ var _ = Describe("ThermoPilot Controller", func() {
 			// The reconciler will fail due to missing API mock, but we expect it to at least try
 			// In a real test, we would mock the HTTP client
 			Expect(err).To(HaveOccurred())
-			Expect(result.RequeueAfter).To(BeNumerically(">", 0))
+			// With error-based requeuing, RequeueAfter should be 0
+			Expect(result.RequeueAfter).To(Equal(time.Duration(0)))
 		})
 	})
 })
