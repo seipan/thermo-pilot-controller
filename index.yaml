@@ -8,6 +8,35 @@ entries:
       artifacthub.io/operatorCapabilities: Basic Install
       artifacthub.io/prerelease: "false"
     apiVersion: v2
+    appVersion: 0.3.0
+    created: "2025-12-26T03:27:36.521073972Z"
+    description: A Kubernetes operator for controlling air conditioners based on temperature
+      readings from SwitchBot sensors
+    digest: 852a8a0afd2e22f66326582ced4023d4019e868341b15ea2254cf3981615953f
+    home: https://github.com/seipan/thermo-pilot-controller
+    keywords:
+    - switchbot
+    - iot
+    - temperature
+    - air-conditioner
+    - operator
+    maintainers:
+    - email: yamasakipann0218@gmail.com
+      name: seipan
+    name: thermo-pilot-controller
+    sources:
+    - https://github.com/seipan/thermo-pilot-controller
+    type: application
+    urls:
+    - https://github.com/seipan/thermo-pilot-controller/releases/download/thermo-pilot-controller-0.3.0/thermo-pilot-controller-0.3.0.tgz
+    version: 0.3.0
+  - annotations:
+      artifacthub.io/changes: |
+        - Initial release
+      artifacthub.io/operator: "true"
+      artifacthub.io/operatorCapabilities: Basic Install
+      artifacthub.io/prerelease: "false"
+    apiVersion: v2
     appVersion: 0.2.9
     created: "2025-12-25T18:50:42.86746135Z"
     description: A Kubernetes operator for controlling air conditioners based on temperature
@@ -88,4 +117,4 @@ entries:
     urls:
     - https://github.com/seipan/thermo-pilot-controller/releases/download/thermo-pilot-controller-0.2.4/thermo-pilot-controller-0.2.4.tgz
     version: 0.2.4
-generated: "2025-12-25T18:50:42.867473813Z"
+generated: "2025-12-26T03:27:36.521089461Z"
